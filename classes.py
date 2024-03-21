@@ -2,10 +2,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from itertools import groupby
-import matplotlib.pyplot as plt
-import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
-from PrettyPrint import PrettyPrintTree
+
 #absract class for minimax, minimax Alpha-Beta, ExpectiMinimax
 class AiAgent(ABC):
     @abstractmethod
@@ -122,7 +119,7 @@ class GameBoard():
             self.max = None
             self.update_heurestic_score()
     def __hash__(self) -> int:
-        hash(self.board.tobytes())
+        return hash(self.board.tobytes())
     def __eq__(self, __value: object) -> bool:
         return np.all(self.board == __value.board)
     def __getitem__(self,index) -> np.array:
@@ -186,17 +183,4 @@ class GameBoard():
         self.update_heurestic_score()
         print(self.get_score())
         return None
-def draw_tree(tree):
-    G = nx.DiGraph()
-    labels = {}
-    node_colors = []
-    node = tree
-    G.add_node(node)
-    for child in node.children:
-        G.add_node(child)
-        G.add_edge(node, child)
-    labels[node] = f'{node.min}/{node.max}\n{node.alpha}/{node.beta}'
-    node_colors.append('red' if node.role == 'max' else 'blue')
-    pos = graphviz_layout(G, prog='dot')
-    nx.draw(G, pos, labels=labels, with_labels=True, arrows=False, node_color=node_colors, node_shape='s')
-    plt.show()
+    

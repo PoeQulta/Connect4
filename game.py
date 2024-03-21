@@ -5,6 +5,9 @@ import math
 import time
 from classes import GameBoard,Pieces,MiniMax,AlphaBetaMiniMax,ExpectiMiniMax
 from PrettyPrint import PrettyPrintTree
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
 class GameEnv(object):
     BLUE = (0,0,255)
     BLACK = (0,0,0)
@@ -70,11 +73,39 @@ class GameEnv(object):
         print(len(board.GameBoardsDict))
         cls.turn = 0
         cls.render_board(newBoard)
-        print_tree(board)
+        #print_tree(board)
+        #draw_tree(board)
         return newBoard
 def print_tree(tree):
     pt = PrettyPrintTree(lambda x: x.children, lambda x: {"min":x.min,"max":x.max},orientation=PrettyPrintTree.Horizontal)
-    pt(tree)	
+    pt(tree)
+def get_all_nodes(board):
+        all_nodes = []
+        stack = [board]
+        while stack:
+            node = stack.pop()
+            all_nodes.append(node)
+            stack.extend(node.children)
+        return all_nodes
+def draw_tree(tree):
+    all_nodes = get_all_nodes(tree)
+
+    G = nx.DiGraph()
+
+    # Add edges to the graph
+    for node in all_nodes:
+        for child in node.children:
+            G.add_edge(node, child)
+
+    # Define labels for nodes
+    labels = {node: f'min: {node.min}, max: {node.max}' for node in all_nodes}
+
+    # Draw the graph
+    pos = graphviz_layout(G, prog='dot')
+    nx.draw(G, pos, with_labels=False, arrows=False)
+    nx.draw_networkx_labels(G, pos, labels=labels)
+
+    plt.show()	
 if __name__ =="__main__":
     board = GameBoard()
     pygame.init()
