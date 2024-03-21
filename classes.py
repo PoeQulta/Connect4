@@ -2,6 +2,10 @@ import numpy as np
 from abc import ABC, abstractmethod
 from enum import IntEnum
 from itertools import groupby
+import matplotlib.pyplot as plt
+import networkx as nx
+from networkx.drawing.nx_agraph import graphviz_layout
+from PrettyPrint import PrettyPrintTree
 #absract class for minimax, minimax Alpha-Beta, ExpectiMinimax
 class AiAgent(ABC):
     @abstractmethod
@@ -12,6 +16,7 @@ class MiniMax(AiAgent):
     def __init__(self,depth) -> None:
         super().__init__()
         self.Targetdepth = depth
+        self.tree = None
     def applyMinMax(self,board,currentDepth,turn):
         if(currentDepth == self.Targetdepth or board.is_full()):
             return board
@@ -107,10 +112,14 @@ class GameBoard():
             self.board = self.init_empty_board()
             self.score = -1*np.inf
             self.children = []
+            self.min = None
+            self.max = None
         else:
             self.board = board
             self.children = []
             self.score = 0
+            self.min = None
+            self.max = None
             self.update_heurestic_score()
     def __hash__(self) -> int:
         hash(self.board.tobytes())
@@ -152,6 +161,8 @@ class GameBoard():
         for child in self.children:
             self.GameBoardsDict[child.board.tobytes()] = child
             self.BoardparentMap[child.board.tobytes()] = self
+        self.min = min(self.children,key=lambda x: x.score).score
+        self.max = max(self.children,key=lambda x: x.score).score
     def is_full(self):
         return not 0 in self.board
     def drop_piece(self,turn,col):
@@ -168,9 +179,24 @@ class GameBoard():
                 Board = GameBoard(board=newBoard)
                 self.GameBoardsDict[newBoard.tobytes()] = Board
                 self.BoardparentMap[newBoard.tobytes()] = self
+                self.update_heurestic_score()
                 return Board
             else:
                 return child
         self.update_heurestic_score()
         print(self.get_score())
         return None
+def draw_tree(tree):
+    G = nx.DiGraph()
+    labels = {}
+    node_colors = []
+    node = tree
+    G.add_node(node)
+    for child in node.children:
+        G.add_node(child)
+        G.add_edge(node, child)
+    labels[node] = f'{node.min}/{node.max}\n{node.alpha}/{node.beta}'
+    node_colors.append('red' if node.role == 'max' else 'blue')
+    pos = graphviz_layout(G, prog='dot')
+    nx.draw(G, pos, labels=labels, with_labels=True, arrows=False, node_color=node_colors, node_shape='s')
+    plt.show()

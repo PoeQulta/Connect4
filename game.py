@@ -2,13 +2,9 @@ import numpy as np
 import pygame
 import sys
 import math
-
+import time
 from classes import GameBoard,Pieces,MiniMax,AlphaBetaMiniMax,ExpectiMiniMax
-
-
-
-
-    
+from PrettyPrint import PrettyPrintTree
 class GameEnv(object):
     BLUE = (0,0,255)
     BLACK = (0,0,0)
@@ -24,7 +20,7 @@ class GameEnv(object):
     myfont = pygame.font.SysFont("monospace", 75)
     game_over = False
     turn = 0
-    AiAgent = ExpectiMiniMax(5)
+    AiAgent = MiniMax(3)
     @classmethod
     def render_board(cls,board):
         for c in range(board.COLUMN_COUNT):
@@ -66,11 +62,19 @@ class GameEnv(object):
             return board
     @classmethod
     def ai_handover(cls,board):
+        start = time.process_time()    
         newBoard = cls.AiAgent.getNextMove(board)
+        print("Time Taken:")
+        print(time.process_time() - start)
+        print("Total Expanded Nodes:")
+        print(len(board.GameBoardsDict))
         cls.turn = 0
         cls.render_board(newBoard)
+        print_tree(board)
         return newBoard
-	
+def print_tree(tree):
+    pt = PrettyPrintTree(lambda x: x.children, lambda x: {"min":x.min,"max":x.max},orientation=PrettyPrintTree.Horizontal)
+    pt(tree)	
 if __name__ =="__main__":
     board = GameBoard()
     pygame.init()
